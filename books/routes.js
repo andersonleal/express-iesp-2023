@@ -1,24 +1,39 @@
 const express = require('express');
 const routes = express.Router();
+const {ObjectId} = require("mongodb");
+const Book = require('./model/book')
 
-const books = [
-  {id: 1, title: 'livro 1', author: 'autor 1'},
-  {id: 2, title: 'livro 2', author: 'autor 2'},
-  {id: 3, title: 'livro 3', author: 'autor 3'},
-]
-
-routes.get('/', (req, res) => {
-  res.json(books);
+routes.put('/:id', async (req, res) => {
+  const book = await Book.findOneAndUpdate(
+    { _id: new ObjectId(req.params.id) },
+    { title: req.body.title,
+      author: req.body.author,
+      active: req.body.active
+    })
+  res.status(200).json(book);
 });
 
-routes.post('/', (req, res) => {
-  const book = {
-    id: books.length + 1,
+routes.get('/', async (req, res) => {
+  const livros = await Book.find()
+  res.json(livros);
+});
+
+routes.post('/', async (req, res) => {
+  let book = new Book({
     title: req.body.title,
-    author: req.body.author
-  };
-  books.push(book);
+    author: req.body.author,
+    active: true
+  })
+  book = await book.save()
   res.status(201).json(book);
 });
 
+
+routes.get('/:id', async (req, res) => {
+  const book = await Book
+    .findOne({ _id: new ObjectId(req.params.id) })
+  res.json(book);
+});
+
+// https://github.com/andersonleal/express-iesp-2023
 module.exports = routes;
